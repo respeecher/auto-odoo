@@ -1,0 +1,14 @@
+[Unit]
+Description=Odoo with SSL and backups
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/docker-compose up
+ExecStop=/usr/local/bin/docker-compose down
+User=odoo-docker
+Group=odoo-docker
+Restart=always
+WorkingDirectory=/home/odoo-docker/odoo-docker
+
+[Install]
+WantedBy=multi-user.target

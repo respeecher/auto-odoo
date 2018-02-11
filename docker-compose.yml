@@ -1,0 +1,35 @@
+version: '2'
+services:
+  db:
+    image: postgres:10
+    environment:
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+  odoo:
+    image: odoo:11
+    depends_on:
+      - db
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      #- ./config:/etc/odoo
+      #- ./addons:/mnt/extra-addons
+  nginx:
+    image: nginx
+    depends_on:
+      - odoo
+    #restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-conf:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # See "Forward Secrecy & Diffie Hellman Ephemeral Parameters" section of https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
+      - /etc/ssl/certs:/etc/ssl/certs:ro
+volumes:
+  odoo-db-data:
+  odoo-web-data:
+  nginx-logs:
