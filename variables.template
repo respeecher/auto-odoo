@@ -1,5 +1,5 @@
 # The certificate will be for the following domain and its "crm" subdomain
-domain=ibissia.com
+domain=mydomain.com
 backups_ssh_key=/home/grant/.ssh/id_rsa
 backup_server=seaf.hopto.org
 backup_server_ssh_user=grant
