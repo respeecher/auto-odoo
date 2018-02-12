@@ -26,7 +26,8 @@ Auto Odoo is tested only on Ubuntu 16.04.
 
 Follow the following steps:
 
-- Install certbot, docker, docker-compose, and cron.  (You can probaly install install all of this with apt-get, but
+- As root, `cd /etc/ssl/certs && openssl dhparam -out dhparam.pem 4096`.  (See comment in `docker-compose.yml` for why we do this.)
+- Install certbot, docker, docker-compose, and cron.  (You can probaly install all of this with apt-get, but
   for certbot, docker, and docker-compose, it may be worth following the instructions on the docker web site to get
   the latest versions.)
 - Run `cp variables.template variables` and edit the `variables` file to conform to your site's needs.
