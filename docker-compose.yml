@@ -27,7 +27,6 @@ services:
     volumes:
       - ./nginx-conf:/etc/nginx/conf.d:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      # See "Forward Secrecy & Diffie Hellman Ephemeral Parameters" section of https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
       - /etc/ssl/certs:/etc/ssl/certs:ro
 volumes:
   odoo-db-data:
