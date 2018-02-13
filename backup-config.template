@@ -1,0 +1,5 @@
+backup_server=backups.mydomain.com
+backup_server_ssh_key=/home/odoo-docker/.ssh/id_rsa
+backup_server_ssh_user=backerupper
+backup_server_ssh_port=22  # Leave this unchanged unless you need to change it
+backups_path=/path/on/backup/server/to/store/backups/at

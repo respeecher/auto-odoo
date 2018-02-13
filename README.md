@@ -105,6 +105,16 @@ Run
 
 to propagate the variable values into config files.
 
+Run
+
+```
+mkdir backup-configs
+cp backup-config.template backup-configs/myconfig
+```
+
+Edit `backup-config/myconfig` to conform to your needs.  You can also add additional backup configs if you would like
+your backups stored in multiple places.
+
 ### Get certificates
 
 As root,
