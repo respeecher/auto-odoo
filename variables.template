@@ -1,4 +1,5 @@
-# The certificate will be for the following domain and its "crm" subdomain
+# The certificate will be for the following domain and its "crm" subdomain.  (Or
+# maybe we should use "host" or "server" as the variable name instead of "domain".)
 domain=mydomain.com
 backup_server=backups.mydomain.com
 backup_server_ssh_key=/home/odoo-docker/.ssh/id_rsa
