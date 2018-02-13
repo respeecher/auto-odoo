@@ -149,4 +149,15 @@ Now stop odoo with Ctrl-C or `docker-compose down`.
 
 ## Restoring from backups
 
-To do ...
+Restoring works by deleting the web and db data volumes used by Auto Odoo and replacing them with new data volumes
+that the backup data is copied into.  So you should only restore if you are sure you don't need the existing data
+volumes.  Note that nothing is changed regarding the nginx data volume during a restore because that volume is only
+used for logs.
+
+Before restoring, you must bring down Auto Odoo.  You can manually remove the old web and db volumes, or `restore.sh`
+will do it for you.  But be aware that removing data volumes sometimes fails in docker if there are defunct containers
+that used them.  So you may want to run something like `docker ps -aq | xargs docker rm` to clean up such containers
+before running the restore.
+
+As root, in Auto Odoo's directory, run `./restore.sh XXX` where XXX is the name of the `.txz` archive you wish to
+restore from.  Then bring up Auto Odoo as usual.
