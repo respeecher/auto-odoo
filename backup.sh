@@ -30,9 +30,9 @@ fi
 
 docker ps
 
-docker run -v $(pwd)/backup:/target -v ${volume_prefix}_odoo-db-data:/source ubuntu cp -rp /source /target/odoo-db-data
-docker run -v $(pwd)/backup:/target -v ${volume_prefix}_odoo-web-data:/source ubuntu cp -rp /source /target/odoo-web-data
-docker run -v $(pwd)/backup:/target -v ${volume_prefix}_nginx-logs:/source ubuntu /bin/sh -c 'cp -rp /source /target/nginx-logs && rm -f /source/*'
+docker run -v $(pwd)/backup:/target -v ${volume_prefix}_odoo-db-data:/source ubuntu cp -a /source /target/odoo-db-data
+docker run -v $(pwd)/backup:/target -v ${volume_prefix}_odoo-web-data:/source ubuntu cp -a /source /target/odoo-web-data
+docker run -v $(pwd)/backup:/target -v ${volume_prefix}_nginx-logs:/source ubuntu /bin/sh -c 'cp -a /source /target/nginx-logs && rm -f /source/*'
 
 if [[ $volume_prefix = odoodocker ]]; then
     systemctl start auto-odoo
