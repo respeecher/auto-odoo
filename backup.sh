@@ -47,7 +47,7 @@ exec >> backup-end-trace 2>&1
 tar cJf ${volume_prefix}-$date_string.txz backup
 rm -rf backup
 
-set + f
+set +f
 for f in backup-configs/*; do
     . $f
     scp -i $backup_server_ssh_key -P $backup_server_ssh_port ${volume_prefix}-$date_string.txz $backup_server_ssh_user@$backup_server:$backups_path
