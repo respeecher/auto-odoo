@@ -18,8 +18,8 @@ only uses the standard odoo, postgres, and nginx images.
 For SSL certificates, Auto Odoo uses `certbot` from letsencrypt in standalone mode.
 
 For backups, Auto Odoo uses `scp` to copy the postgres data directory, odoo data directory,
-and nginx logs to a machine of your choice.  It also then truncates the logs so successive
-backups contain successive segments of the logs.
+and nginx logs to a machine or machines of your choice.  It also then truncates the logs so
+successive backups contain successive segments of the logs.
 
 Auto Odoo is tested only on Ubuntu 16.04.
 
@@ -148,14 +148,29 @@ Now stop odoo with Ctrl-C or `docker-compose down`.
 
 - As root, run `./setup.sh`.  This will create a user called odoo-docker, copy the installation into that user's
   home directory, and install a systemd service to control auto-odoo.
-- As root, run `crontab -e` and make a cron entry like  `13 4 * * * /home/odoo-docker/odoo-docker/backup.sh`
-  (to run backups at 4:13AM every day).  Note that Odoo will briefly go down for backups.
+
+- As root, run `crontab -e` and make a cron entry like `13 4 * * * /home/odoo-docker/odoo-docker/backup.sh` (to run
+  backups at 4:13AM every day).  Note that Odoo will briefly go down for backups.
+
 - As root, run `systemctl start auto-odoo` to start Odoo.
+
 - As root, run `systemctl enable auto-odoo` to start Odoo on boot.
 
-## Notes
+## Notes on backups
 
 - You can manually run a backup anytime by running `backup.sh` as root.
+
+- You should run a manual test backup anytime you change the backup configs.
+
+- You should regularly check that backups are working properly.  A good practice is to have at least one backup be
+  to a cloud server with Auto Odoo installed.  You might even run Auto Odoo and restore each night from the nightly
+  backup.  Then any Odoo user can check that this backup server is always running the previous day's backup.
+
+- All backups are kept permanently on the machines backed up to as well as in the Auto Odoo directory on the
+  machine being backed up.  If that machine runs out of disk space, backups will start to fail.  (And also Odoo
+  itself may start to malfunction if the machine runs out of disk space.)  In the future, we might implement
+  systems to auto-prune backups and/or send alerts if backups begin to fail, but currently Auto Odoo does not
+  support anything like this.  So it is important to be vigilant in monitoring disk usage.
 
 ## Restoring from backups
 
