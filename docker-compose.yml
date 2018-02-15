@@ -25,6 +25,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      - nginx-logs:/var/log/nginx
       - ./nginx-conf:/etc/nginx/conf.d:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /etc/ssl/certs:/etc/ssl/certs:ro
