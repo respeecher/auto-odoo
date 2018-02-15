@@ -108,6 +108,17 @@ to propagate the variable values into config files.
 Run
 
 ```
+cp .env.template .env
+```
+
+Then edit .env if you want to specify the images to use for nginx, postgres, and odoo differently from how they are
+specified by default.  Then, if you upgrade Auto Odoo, even if the default images change, the images used in your
+installation will not, which is good because upgrading between major versions of Postgres and Odoo requires running
+special migration scripts.
+
+Run
+
+```
 mkdir backup-configs
 cp backup-config.template backup-configs/myconfig
 ```

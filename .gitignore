@@ -1,7 +1,7 @@
+.env
 backup
 backup-configs
 backup-end-trace
 nginx-conf
 variables
 *.txz
-

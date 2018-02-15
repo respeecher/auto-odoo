@@ -1,7 +1,7 @@
 version: '2'
 services:
   db:
-    image: postgres:10
+    image: $db_image
     environment:
       - POSTGRES_PASSWORD=odoo
       - POSTGRES_USER=odoo
@@ -9,7 +9,7 @@ services:
     volumes:
       - odoo-db-data:/var/lib/postgresql/data/pgdata
   odoo:
-    image: odoo:11
+    image: $odoo_image
     depends_on:
       - db
     volumes:
@@ -17,7 +17,7 @@ services:
       #- ./config:/etc/odoo
       #- ./addons:/mnt/extra-addons
   nginx:
-    image: nginx
+    image: $nginx_image
     depends_on:
       - odoo
     #restart: always
