@@ -116,6 +116,21 @@ specified by default.  Then, if you upgrade Auto Odoo, even if the default image
 installation will not, which is good because upgrading between major versions of Postgres and Odoo requires running
 special migration scripts.
 
+Odoo uses `/etc/odoo/odoo.conf` not only for configuration that is done not changeable through the web interface but
+also for things that are so changeable including, crucially, the database management password.  So this file must be
+persisted for Odoo to be secure.  We achieve this by bind mounting `odoo.conf` in the Auto Odoo directory into the
+container.  To obtain a good starting `odoo.conf` for the Odoo image selected in `.env`, run
+
+```
+./get-default-odoo-conf.sh
+```
+
+In order that this file have its normal owner and group, as root run
+
+```
+chown 101.0 ./odoo.conf
+```
+
 Run
 
 ```

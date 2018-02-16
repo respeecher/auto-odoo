@@ -14,7 +14,7 @@ services:
       - db
     volumes:
       - odoo-web-data:/var/lib/odoo
-      #- ./config:/etc/odoo
+      - ./odoo.conf:/etc/odoo/odoo.conf
       #- ./addons:/mnt/extra-addons
   nginx:
     image: $nginx_image

@@ -3,5 +3,6 @@ backup
 backup-configs
 backup-end-trace
 nginx-conf
+odoo.conf
 variables
 *.txz
