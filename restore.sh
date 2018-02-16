@@ -3,6 +3,8 @@
 set -feuo pipefail
 IFS=
 
+cd $(dirname $0)
+
 if [[ $# != 1 ]]; then
     echo "Usage: $0 backup-path"
     echo "backup-path should be something like odoodocker-2018-02-13-10-17-05.txz"
@@ -46,6 +48,8 @@ docker volume create ${volume_prefix}_odoo-web-data
 
 docker run -v $(pwd)/backup/odoo-db-data:/source:ro -v ${volume_prefix}_odoo-db-data:/target ubuntu cp -a /source/. /target
 docker run -v $(pwd)/backup/odoo-web-data:/source:ro -v ${volume_prefix}_odoo-web-data:/target ubuntu cp -a /source/. /target
+cp -a backup/odoo.conf .
+cp -a backup/.env .
 
 rm -rf backup
 
