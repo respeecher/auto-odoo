@@ -1,5 +1,7 @@
 backup_server=backups.mydomain.com
-backup_server_ssh_key=/home/odoo-docker/.ssh/id_rsa
-backup_server_ssh_user=backerupper
 backup_server_ssh_port=22  # Leave this unchanged unless you need to change it
-backups_path=/path/on/backup/server/to/store/backups/at
+
+# You won't need to change the following lines unless you deviate from the README
+backup_server_ssh_key=/home/odoo-docker/.ssh/id_rsa
+backup_server_ssh_user=autoodoobackupreceiver
+backups_path=/home/autoodoobackupreceiver/backups
