@@ -6,7 +6,7 @@ IFS=
 cd $(dirname $0)
 . variables
 mkdir backup
-exec > backup/backup.sh.output 2>&1
+exec >  >(tee backup/backup.sh.output) 2>&1
 date
 
 # Add /usr/local/bin to path since it doesn't seem to be present by default when running as a cron job
@@ -44,7 +44,7 @@ fi
 
 date_string=$(date '+%F-%T' | sed s/:/-/g)
 
-exec >> backup-end-trace 2>&1
+exec > >(tee -a backup-end-trace) 2>&1
 
 tar cJf ${volume_prefix}-$date_string.txz backup
 rm -rf backup
