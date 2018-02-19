@@ -36,6 +36,7 @@ As root,
 cd /etc/ssl/certs
 openssl dhparam -out dhparam.pem 4096
 ```
+
 See the section "Forward Secrecy & Diffie Hellman Ephemeral Parameters" of
 https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html and
 https://security.stackexchange.com/questions/94390/whats-the-purpose-of-dh-parameters
@@ -74,7 +75,7 @@ apt-get install -y docker-ce
 You can add yourself to the `docker` group to be able to run docker as non-root.  (Note that any user that
 can run docker effectively has root privileges, however.)
 
-### Install docker-compose
+## Install docker-compose
 
 Follow the instructions at `https://docs.docker.com/compose/install/#install-compose`:
 
@@ -110,7 +111,7 @@ cp .env.template .env
 ```
 
 Then edit .env if you want to specify the images to use for nginx, postgres, and odoo differently from how they are
-specified by default.  Then, if you upgrade Auto Odoo, even if the default images change, the images used in your
+specified by default.  If you upgrade Auto Odoo, even if the default images change, the images used in your
 installation will not, which is good because upgrading between major versions of Postgres and Odoo requires running
 special migration scripts.
 
@@ -129,7 +130,7 @@ In order that this file have its normal owner and group, as root run
 chown 101.0 ./odoo.conf
 ```
 
-### Get certificates
+## Get certificates
 
 As root,
 
@@ -137,18 +138,21 @@ As root,
 ./get-or-renew-certs.sh
 ```
 
-Auto Odoo does not automatically renew your certificate.  However, if you like you can run `crontab -e` as root and setup
-a cron job to run `/home/odoo-docker/odoo-docker/get-or-renew-certs.sh`.
+To setup auto-renewal of your certificates, run `crontab -e` as root and add a line like
+`43 4 * * * /home/odoo-docker/odoo-docker/get-or-renew-certs.sh`.
+This will attempt to renew your certificates every night.
+Letsencrypt will reject the attempt until you are one month from expiry, and then it will renew them.
 
-## Make CAA DNS record (optional)
+## Make a CAA DNS record (optional)
 
 For extra security, you may wish to set up a CAA DNS record to instruct browsers that only letsencrypt.org can issue
-certificates for your domain.
+certificates for your domain.  In your DNS, add records of type CAA with content `0 issue "letsencrypt.org"` for
+your domain and its "crm" subdomain.
 
-## Test it
+## Test it (optional)
 
-Test that Auto Odoo will work by running `docker-compose up` and browsing to the "crm" subdomain of your domain
-(or it will also work to browse to the domain itself).
+If you want, you can now test that Auto Odoo will work by running `docker-compose up` and browsing to the "crm"
+subdomain of your domain (or it will also work to browse to the domain itself).
 
 Now stop odoo with Ctrl-C or `docker-compose down`.
 
@@ -157,29 +161,50 @@ Now stop odoo with Ctrl-C or `docker-compose down`.
 - As root, run `./setup.sh`.  This will create a user called odoo-docker, copy the installation into that user's
   home directory, generate an ssh key for the user, and install a systemd service to control auto-odoo.
 
-- As root, run `crontab -e` and make a cron entry like `13 4 * * * /home/odoo-docker/odoo-docker/backup.sh` (to run
-  backups at 4:13AM every day).  Note that Odoo will briefly go down for backups.
+- As root, run `crontab -e` and make a cron entry like
+  `13 4 * * * /home/odoo-docker/odoo-docker/backup.sh`
+  (to run backups at 4:13AM every day).  Auto Odoo will briefly go down for backups, so you should schedule them for a time
+  when it will not be used much.
 
 - As root, run `systemctl start auto-odoo` to start Odoo.
 
 - As root, run `systemctl enable auto-odoo` to start Odoo on boot.
 
-All backups are kept permanently on the machines backed up to as well as in the Auto Odoo directory on the
-machine being backed up.  If that machine runs out of disk space, backups will start to fail.  (And also Odoo
-itself may start to malfunction if the machine runs out of disk space.)  In the future, we might implement
-systems to auto-prune backups and/or send alerts if backups begin to fail, but currently Auto Odoo does not
-support anything like this.  So it is important to be vigilant in monitoring disk usage.
+You may now test that Auto Odoo is working, and any changes you make will be persisted.
+
 
 ## Configure and test backups
 
-From now on we will work in `/home/odoo-docker` as odoo-docker unless otherwise specified.
+In the previous section, we made backups run every night.  But for backups to actually work, we need to configure them.
 
-Run
+### Generate an ssh key for Auto Odoo
+
+As odoo-docker,
+
+```
+ssh-keygen -t rsa -b 4096
+```
+
+and hit enter a few times.
+
+### Configure the Odoo server
+
+Working in `/home/odoo-docker`, as odoo-docker,
 
 ```
 mkdir backup-configs
 cp backup-config.template backup-configs/myconfig
 ```
+
+Edit `backup-configs/myconfig` to conform to your needs.  Unless you have deviated from the instructions you will
+just have to set the name of your backup server, and possibly a port, if you need to run ssh over a non-standard
+port.
+
+You can add as many backup configs as you like.  It's a good idea to configure at least two backup servers.
+Another good practice is to install Auto Odoo on at least one of your backup servers so that you can quickly bring
+it up if your primary machine self-destructs.
+
+### Configure the backup server
 
 On the backup server, as root,
 
@@ -190,13 +215,16 @@ useradd -m -s /bin/bash autoodoobackupreceiver
 As autoodoobackpreceiver,
 ```
 mkdir /home/autoodoobackupreceiver/backups
-echo 'no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty,command="/home/autoodoobackupreceiver/receive-backup.sh" ' > /home/autoodoobackupreceiver/.ssh/authorized_keys
+echo 'no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty,command="scp -t /home/autoodoobackupreceiver/backups" ' > /home/autoodoobackupreceiver/.ssh/authorized_keys
 ```
 Now edit `/home/autoodoobackupreceiver/.ssh/authorized_keys` to add, without a line break, the ssh key in
-`/home/odoo-docker/.ssh/id_rsa.pub` on the Odoo server.  This step is important because otherwise a compromise of
-your Odoo server would lead to a compromise of your backup server.
+`/home/odoo-docker/.ssh/id_rsa.pub` on the Odoo server.
 
-Even with this precaution, is someone hacks your Odoo server, they will still be able to overwrite any files in
+This way of adding the key to `authorized_keys` ensures that the only thing Auto Odoo can do on the backup server
+is copy files to `/home/autoodoobackupreceiver/backups`.  So if the Odoo server is compromised, the backup server
+will still be safe.
+
+Even with this precaution, if someone hacks your Odoo server, they will still be able to overwrite any files in
 `/home/autoodoobackupreceiver/backups`.  Therefore, it is important to regularly move backups from
 `/home/autoodoobackupreceiver/backups` to a safe location.
 
@@ -205,23 +233,42 @@ Run,
 mkdir /home/autoodoobackupreceiver/safe-backups
 ```
 
-Run `crontab -e` and make a cron entry like `13 5 * * * cp -an /home/autoodoobackupreceiver/backups
-  /home/autoodoobackupreceiver/safe-backups` (to move the backups at 5:13AM every day).
+Run `crontab -e` and make a cron entry like
+`23 5 * * * mv -n /home/autoodoobackupreceiver/backups/* /home/autoodoobackupreceiver/safe-backups`
+(to move the backups at 5:23AM every day).  Note that cron uses local time, so if your servers are not all in the
+same timezone (and don't all just use UTC), it is not simple to tightly synchronize cron actions between them, but
+fortunately tight synchronization is not important for backup moving.
 
-Edit `backup-config/myconfig` to conform to your needs.  Unless you have deviated from the instructions you will
-just have to set the name of your backup server and possibly an port if you need to run ssh over a non-standard
-port.
+Even with these precautions, it is still a good idea to regularly copy backups to offline media.  Another good
+precaution is to have at least one backup server that can only be accessed from a secure location (not your
+laptop).
 
-You can add as many backup configs as you like.  It's a good idea to configure at least two backup servers and also to
-regularly copy your backups to offline media.
+### Test backups
 
 Test that backups work by running `./backup.sh` as root.  (Root is needed because the backups are created preserving
 the original file owners.)  It is important to do at least one manual backup because ssh and scp prompt about
 unknown hosts the first time they see a new host, and automated backups will not pass this challenge.
 
-If anything goes wrong with the backups, you can see output from the backup process in `backup/backup.sh.output` and
-`backup-end-trace`.  If something goes wrong, the `backup` directory may be left over.  Remove it before trying again.
+### General information about backups
 
+#### Troubleshooting
+
+The backup archive (`.txz` file) is made from a directory called `backup` that `backupl.sh` creates in the Auto Odoo
+directory and then removes after creating the archive.  If something goes wrong with `backup.sh`, the `backup`
+directory may be left over, and you should remove it manually.
+
+Output from `backup.sh` is saved in `backup/backup.sh.output`.  After the archive file is made, `backup.sh` can no
+longer save output in `backup/backup.sh.output`, so it saves a record of its output in `backup-end-trace` in the
+Auto Odoo directory.  This is where you can look for errors that occurred while trying to ship the backups to the
+backup servers.
+
+#### Avoiding running out of space and manual monitoring
+
+All backups are kept permanently on the machines backed up to as well as in the Auto Odoo directory on the
+machine being backed up.  Be vigilant that there is sufficient disk space on the Odoo server and all backup servers
+because Auto Odoo does not monitor disk usage or automatically prune old backups.  In any case, it is a good idea
+to regularly verify that the backup system is working as intended (perhaps at the same time that you make offline
+copies of the backups).
 
 ## Restoring from backups
 
@@ -235,5 +282,9 @@ will do it for you.  But be aware that removing data volumes sometimes fails in 
 that used them.  So you may want to run something like `docker ps -aq | xargs docker rm` to clean up such containers
 before running the restore.
 
-As root, in Auto Odoo's directory, run `./restore.sh XXX` where XXX is the name of the `.txz` archive you wish to
+As root, in Auto Odoo's directory, run `./restore.sh XXX`, where XXX is the name of the `.txz` archive you wish to
 restore from.  Then bring up Auto Odoo as usual.
+
+Having Auto Odoo installed on one of the backup servers is a good idea not only because it makes it quick to get
+Odoo back up if your primary server dies but also because that way it is easy to periodically verify that restoring
+works as intended.
