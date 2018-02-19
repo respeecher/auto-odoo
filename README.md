@@ -2,24 +2,25 @@
 
 Quickly configure a production Odoo server with SSL and backups.
 
-To run a production Odoo server, you need to run the server itself, a database, and a
-reverse proxy to terminate SSL.  Furthermore, you need to get an SSL certificate, and
-you need to implement a backup system.  Finally, you should make all this start
-automatically when your machine boots.
+To run a production Odoo server, you need to run the server itself, a database, and a reverse proxy to terminate
+SSL.  Furthermore, you need to get an SSL certificate, and you need to implement a backup system.  Finally, you
+should make all this start automatically when your machine boots.
 
-Auto Odoo aims to make this all as simple as possible to set up while being as simple
-as possible itself.  And it is relatively paranoid about trying to set up SSL in the
-most secure possible way.
+Auto Odoo aims to make this all as simple as possible to set up while being as simple and transparent as possible
+itself.  (This README is longer than all the code making up Auto Odoo.)
 
-To orchestrate the three servers, Auto Odoo uses docker-compose.  Unlike other dockerized
-Odoo systems which use custom images that can be complicated to understand, Auto Odoo
-only uses the standard odoo, postgres, and nginx images.
+To orchestrate the three servers, Auto Odoo uses docker-compose.  Unlike other dockerized Odoo systems which use
+custom images that can be complicated to understand, Auto Odoo only uses the standard odoo, postgres, and nginx
+images.  Of the three servers, only nginx requires any configuration, and Auto Odoo uses a simple reverse proxy
+configuration optimized for security and performance (not compatibility with old browsers).
 
 For SSL certificates, Auto Odoo uses `certbot` from letsencrypt in standalone mode.
 
-For backups, Auto Odoo uses `scp` to copy the postgres data directory, odoo data directory,
-and nginx logs to a machine or machines of your choice.  It also then truncates the logs so
-successive backups contain successive segments of the logs.
+For backups, Auto Odoo uses `scp` to copy the postgres data directory, odoo data directory, and nginx logs to a
+machine or machines of your choice.  It also then truncates the logs so successive backups contain successive
+segments of the logs.  By restricting the ssh key used to `scp` to only be able to `scp` into a particular
+directory and regularly moving backups out of that directory, Auto Odoo ensures that your backups will be safe even
+if your Odoo server is hacked.
 
 Auto Odoo is tested only on Ubuntu 16.04.
 
@@ -113,12 +114,14 @@ cp .env.template .env
 Then edit .env if you want to specify the images to use for nginx, postgres, and odoo differently from how they are
 specified by default.  If you upgrade Auto Odoo, even if the default images change, the images used in your
 installation will not, which is good because upgrading between major versions of Postgres and Odoo requires running
-special migration scripts.
+special migration scripts.  The default settings only fix the major versions of Postgres and Odoo and nothing at
+all about nginx.  This means that you can upgrade to the latest minor versions of Postgres and Odoo and the latest
+version of nginx simply by doing a `docker pull` on the image labels specified in `.env` and restarting Auto Odoo.
 
-Odoo uses `/etc/odoo/odoo.conf` not only for configuration that is done not changeable through the web interface but
-also for things that are so changeable including, crucially, the database management password.  So this file must be
-persisted for Odoo to be secure.  We achieve this by bind mounting `odoo.conf` in the Auto Odoo directory into the
-container.  To obtain a good starting `odoo.conf` for the Odoo image selected in `.env`, run
+Odoo uses `/etc/odoo/odoo.conf` not only for configuration that is not changeable through the web interface but
+also for things that are so changeable including, crucially, the database management password.  So this file must
+be persisted for Odoo to be secure.  We achieve this by bind mounting `odoo.conf` in the Auto Odoo directory into
+the container.  To obtain a good starting `odoo.conf` for the Odoo image selected in `.env`, run
 
 ```
 ./get-default-odoo-conf.sh
@@ -200,7 +203,11 @@ Edit `backup-configs/myconfig` to conform to your needs.  Unless you have deviat
 just have to set the name of your backup server, and possibly a port, if you need to run ssh over a non-standard
 port.
 
-You can add as many backup configs as you like.  It's a good idea to configure at least two backup servers.
+You can add as many backup configs as you like, and it doesn't matter what they are named.  (The name "myconfig"
+was just an example; you may prefer to name your backup configs after your backup servers.)
+
+It's a good idea to configure at least two backup servers.
+
 Another good practice is to install Auto Odoo on at least one of your backup servers so that you can quickly bring
 it up if your primary machine self-destructs.
 
@@ -233,11 +240,10 @@ Run,
 mkdir /home/autoodoobackupreceiver/safe-backups
 ```
 
-Run `crontab -e` and make a cron entry like
-`23 5 * * * mv -n /home/autoodoobackupreceiver/backups/* /home/autoodoobackupreceiver/safe-backups`
-(to move the backups at 5:23AM every day).  Note that cron uses local time, so if your servers are not all in the
-same timezone (and don't all just use UTC), it is not simple to tightly synchronize cron actions between them, but
-fortunately tight synchronization is not important for backup moving.
+Run `crontab -e` and make a cron entry like `23 5 * * * mv -n /home/autoodoobackupreceiver/backups/*
+/home/autoodoobackupreceiver/safe-backups` (to move the backups at 5:23AM every day).  Note that cron uses local
+time, so if your servers don't all use the same timezone, it is not simple to tightly synchronize cron actions
+between them.  Fortunately, tight synchronization is not important for backup moving.
 
 Even with these precautions, it is still a good idea to regularly copy backups to offline media.  Another good
 precaution is to have at least one backup server that can only be accessed from a secure location (not your
