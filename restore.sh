@@ -46,8 +46,8 @@ docker volume create ${volume_prefix}_odoo-db-data
 docker volume rm ${volume_prefix}_odoo-web-data || /bin/true
 docker volume create ${volume_prefix}_odoo-web-data
 
-docker run -v $(pwd)/backup/odoo-db-data:/source:ro -v ${volume_prefix}_odoo-db-data:/target ubuntu cp -a /source/. /target
-docker run -v $(pwd)/backup/odoo-web-data:/source:ro -v ${volume_prefix}_odoo-web-data:/target ubuntu cp -a /source/. /target
+docker run --rm -v $(pwd)/backup/odoo-db-data:/source:ro -v ${volume_prefix}_odoo-db-data:/target ubuntu cp -a /source/. /target
+docker run --rm -v $(pwd)/backup/odoo-web-data:/source:ro -v ${volume_prefix}_odoo-web-data:/target ubuntu cp -a /source/. /target
 cp -a backup/odoo.conf .
 cp -a backup/.env .
 

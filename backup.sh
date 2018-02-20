@@ -30,9 +30,9 @@ fi
 
 docker ps
 
-docker run -v ${volume_prefix}_odoo-db-data:/source:ro  -v $(pwd)/backup:/target ubuntu cp -a /source /target/odoo-db-data
-docker run -v ${volume_prefix}_odoo-web-data:/source:ro -v $(pwd)/backup:/target ubuntu cp -a /source /target/odoo-web-data
-docker run -v ${volume_prefix}_nginx-logs:/source       -v $(pwd)/backup:/target ubuntu /bin/sh -c 'cp -a /source /target/nginx-logs && rm -f /source/*'
+docker run --rm -v ${volume_prefix}_odoo-db-data:/source:ro  -v $(pwd)/backup:/target ubuntu cp -a /source /target/odoo-db-data
+docker run --rm -v ${volume_prefix}_odoo-web-data:/source:ro -v $(pwd)/backup:/target ubuntu cp -a /source /target/odoo-web-data
+docker run --rm -v ${volume_prefix}_nginx-logs:/source       -v $(pwd)/backup:/target ubuntu /bin/sh -c 'cp -a /source /target/nginx-logs && rm -f /source/*'
 cp -a odoo.conf backup
 cp -a .env backup
 
