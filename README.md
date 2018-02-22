@@ -18,9 +18,14 @@ For SSL certificates, Auto Odoo uses certbot from letsencrypt in standalone mode
 
 For backups, Auto Odoo uses scp to copy the postgres data directory, odoo data directory, and nginx logs to a
 machine or machines of your choice.  It also then truncates the logs so successive backups contain successive
-segments of the logs.  By restricting the ssh key used to scp to only be able to scp into a particular
-directory and regularly moving backups out of that directory, Auto Odoo ensures that your backups will be safe even
-if your Odoo server is hacked.
+segments of the logs.  No Odoo or Postgres logs are backed up.  (It wouldn't hurt to back them up too, but the
+nginx logs are probably the most useful ones to have backups of.)
+
+Using scp for backups is fine for safeguarding data against hardware failure, but unless special precautions are
+taken it is not safe against the threat of a hacked Odoo server.  The problem is that hackers could use the ssh key
+used to scp to destroy the backups (not to mention compromise the backup servers).  Auto Odoo solves this problem
+by restricting this ssh key to only be able to scp into a particular directory and regularly moving backups out of
+that directory (with cron jobs on the backup servers).
 
 Auto Odoo is tested only on Ubuntu 16.04.
 
@@ -73,8 +78,9 @@ apt-get update
 apt-get install -y docker-ce
 ```
 
-You can add yourself to the `docker` group to be able to run docker as non-root.  (Note that any user that
-can run docker effectively has root privileges, however.)
+You can add yourself to the `docker` group to be able to run docker as non-root by running `usermod -aG docker XXX`
+as root, replacing XXX with your username.  (Note that any user that can run docker effectively has root
+privileges, however.)
 
 ## Install docker-compose
 
@@ -95,7 +101,8 @@ Run
 cp variables.template variables
 ```
 
-Then edit the `variables` file to conform to your site's needs.
+Then edit the `variables` file to conform to your site's needs.  (Currently there is only one variable to
+customize: the name of your server.)
 
 Run
 
@@ -112,11 +119,17 @@ cp .env.template .env
 ```
 
 Then edit .env if you want to specify the images to use for nginx, postgres, and odoo differently from how they are
-specified by default.  If you upgrade Auto Odoo, even if the default images change, the images used in your
-installation will not, which is good because upgrading between major versions of Postgres and Odoo requires running
-special migration scripts.  The default settings only fix the major versions of Postgres and Odoo and nothing at
-all about nginx.  This means that you can upgrade to the latest minor versions of Postgres and Odoo and the latest
-version of nginx simply by doing a `docker pull` on the image labels specified in `.env` and restarting Auto Odoo.
+specified by default.
+
+The default settings only fix the major versions of Postgres and Odoo and nothing at all about nginx.  This means
+that you can upgrade to the latest minor versions of Postgres and Odoo and the latest version of nginx simply by
+doing a `docker pull` on the image labels specified in `.env` and restarting Auto Odoo.
+
+You may wish to fix minor versions as well for greater stability.
+
+Future versions of Auto Odoo may include changed major versions of Postgres and Odoo in `.env.template`, but since
+`.env` is gitignored, your major versions will never change unless you change `.env` yourself.  This is a important
+because upgrading between major versions of Postgres and Odoo requires running special migration scripts.
 
 Odoo uses `/etc/odoo/odoo.conf` not only for configuration that is not changeable through the web interface but
 also for things that are so changeable including, crucially, the database management password.  So this file must
@@ -143,8 +156,10 @@ As root,
 
 To setup auto-renewal of your certificates, run `crontab -e` as root and add a line like
 `43 4 * * * /home/odoo-docker/odoo-docker/get-or-renew-certs.sh`.
-This will attempt to renew your certificates every night.
+This will attempt to renew your certificates every night at 4:43AM.
 Letsencrypt will reject the attempt until you are one month from expiry, and then it will renew them.
+
+Schedule the auto-renewal late at night since Auto Odoo will briefly go down for it.
 
 ## Make a CAA DNS record (optional)
 
@@ -164,10 +179,10 @@ Now stop odoo with Ctrl-C or `docker-compose down`.
 - As root, run `./setup.sh`.  This will create a user called odoo-docker, copy the installation into that user's
   home directory, generate an ssh key for the user, and install a systemd service to control auto-odoo.
 
-- As root, run `crontab -e` and make a cron entry like
-  `13 4 * * * /home/odoo-docker/odoo-docker/backup.sh`
-  (to run backups at 4:13AM every day).  Auto Odoo will briefly go down for backups, so you should schedule them for a time
-  when it will not be used much.
+- As root, run `crontab -e` and make a cron entry like `13 4 * * * /home/odoo-docker/odoo-docker/backup.sh` (to run
+  backups at 4:13AM every day).  Schedule backups late at night because Auto Odoo will briefly go down for them.
+  Also, schedule it at a significantly different time from certificate auto-renewal so that these two processes
+  will never overlap.
 
 - As root, run `systemctl start auto-odoo` to start Odoo.
 
@@ -211,7 +226,9 @@ It's a good idea to configure at least two backup servers.
 Another good practice is to install Auto Odoo on at least one of your backup servers so that you can quickly bring
 it up if your primary machine self-destructs.
 
-### Configure the backup server
+### Configure the backup servers
+
+Follow these instructions for each backup server:
 
 On the backup server, as root,
 
@@ -259,7 +276,7 @@ unknown hosts the first time they see a new host, and automated backups will not
 
 #### Troubleshooting
 
-The backup archive (`.txz` file) is made from a directory called `backup` that `backupl.sh` creates in the Auto Odoo
+The backup archive (`.txz` file) is made from a directory called `backup` that `backup.sh` creates in the Auto Odoo
 directory and then removes after creating the archive.  If something goes wrong with `backup.sh`, the `backup`
 directory may be left over, and you should remove it manually.
 
@@ -285,7 +302,7 @@ used for logs.
 
 Before restoring, you must bring down Auto Odoo.  You can manually remove the old web and db volumes, or `restore.sh`
 will do it for you.  But be aware that removing data volumes sometimes fails in docker if there are defunct containers
-that used them.  So you may want to run something like `docker ps -aq | xargs docker rm` to clean up such containers
+that used them.  So you may need to run something like `docker ps -aq | xargs docker rm` to clean up such containers
 before running the restore.
 
 As root, in Auto Odoo's directory, run `./restore.sh XXX`, where XXX is the name of the `.txz` archive you wish to
