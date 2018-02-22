@@ -14,11 +14,11 @@ custom images that can be complicated to understand, Auto Odoo only uses the sta
 images.  Of the three servers, only nginx requires any configuration, and Auto Odoo uses a simple reverse proxy
 configuration optimized for security and performance (not compatibility with old browsers).
 
-For SSL certificates, Auto Odoo uses `certbot` from letsencrypt in standalone mode.
+For SSL certificates, Auto Odoo uses certbot from letsencrypt in standalone mode.
 
-For backups, Auto Odoo uses `scp` to copy the postgres data directory, odoo data directory, and nginx logs to a
+For backups, Auto Odoo uses scp to copy the postgres data directory, odoo data directory, and nginx logs to a
 machine or machines of your choice.  It also then truncates the logs so successive backups contain successive
-segments of the logs.  By restricting the ssh key used to `scp` to only be able to `scp` into a particular
+segments of the logs.  By restricting the ssh key used to scp to only be able to scp into a particular
 directory and regularly moving backups out of that directory, Auto Odoo ensures that your backups will be safe even
 if your Odoo server is hacked.
 
