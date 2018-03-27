@@ -5,9 +5,16 @@ IFS=
 
 cd $(dirname $0)
 . variables
+
+date_string=$(date '+%F-%T' | sed s/:/-/g)
+
+if [[ -d backup ]]; then
+    mv backup backup-leftover-$date_string
+fi
+
 mkdir backup
 exec >  >(tee backup/backup.sh.output) 2>&1
-date
+echo $date_string
 
 # Add /usr/local/bin to path since it doesn't seem to be present by default when running as a cron job
 export PATH=/usr/local/bin:$PATH
@@ -41,8 +48,6 @@ if [[ $volume_prefix = odoodocker ]]; then
 else
     docker-compose up -d
 fi
-
-date_string=$(date '+%F-%T' | sed s/:/-/g)
 
 exec > >(tee -a backup-end-trace) 2>&1
 
