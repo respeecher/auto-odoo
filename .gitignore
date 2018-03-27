@@ -2,7 +2,7 @@
 backup
 backup-configs
 backup-end-trace
+backups
 nginx-conf
 odoo.conf
 variables
-*.txz
