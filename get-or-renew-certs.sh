@@ -1,8 +1,9 @@
 #!/bin/bash
 
-set -e
+set -feuo pipefail
+IFS=
 
-. variables
+. $(dirname $0)/variables
 
 echo 'Testing if auto-odoo service is active...'
 if systemctl is-active auto-odoo; then
