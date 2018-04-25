@@ -121,9 +121,11 @@ cp .env.template .env
 Then edit .env if you want to specify the images to use for nginx, postgres, and odoo differently from how they are
 specified by default.
 
-The default settings only fix the major versions of Postgres and Odoo and nothing at all about nginx.  This means
-that you can upgrade to the latest minor versions of Postgres and Odoo and the latest version of nginx simply by
-doing a `docker pull` on the image labels specified in `.env` and restarting Auto Odoo.
+The default settings only fix the major versions of Postgres and Odoo and nothing at all about nginx.  It is
+probably best to pull new versions of these images, or at least of Odoo, regularly, so that any security
+patches will be applied in a timely manner.  Therefore, the backup script, which is normally run nightly,
+does this.  (Ideally, perhaps, a separate script would pull the images since this functionality has nothing to
+do with backups, but it is simpler to just do it in the backup script.)
 
 You may wish to fix minor versions as well for greater stability.
 
