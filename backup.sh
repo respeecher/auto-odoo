@@ -8,7 +8,7 @@ cd $(dirname $0)
 
 date_string=$(date '+%F-%T' | sed s/:/-/g)
 
-docker-compose pull
+/usr/local/bin/docker-compose pull
 
 if [[ -d backup ]]; then
     mv backup backup-leftover-$date_string
