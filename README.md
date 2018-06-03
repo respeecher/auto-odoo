@@ -130,7 +130,7 @@ do with backups, but it is simpler to just do it in the backup script.)
 You may wish to fix minor versions as well for greater stability.
 
 Future versions of Auto Odoo may include changed major versions of Postgres and Odoo in `.env.template`, but since
-`.env` is gitignored, your major versions will never change unless you change `.env` yourself.  This is a important
+`.env` is gitignored, your major versions will never change unless you change `.env` yourself.  This is important
 because upgrading between major versions of Postgres and Odoo requires running special migration scripts.
 
 Odoo uses `/etc/odoo/odoo.conf` not only for configuration that is not changeable through the web interface but
