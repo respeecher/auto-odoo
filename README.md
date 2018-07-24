@@ -393,3 +393,6 @@ net.ipv6.conf.lo.disable_ipv6 = 1
 ```
 
 and then running `sysctl -p`.
+
+Finally, you may wish to similarly firewall your backup servers, or at least the backup server that you plan
+to failover to if your main server breaks.
