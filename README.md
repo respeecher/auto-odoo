@@ -313,3 +313,83 @@ restore from.  Then bring up Auto Odoo as usual.
 Having Auto Odoo installed on one of the backup servers is a good idea not only because it makes it quick to get
 Odoo back up if your primary server dies but also because that way it is easy to periodically verify that restoring
 works as intended.
+
+## Firewalling Odoo
+
+On any server, it is a good security practice to set up a firewall to restrict outside access to all ports except
+ssh and any you are running services on.  In the case of services that are only used internally to your organization,
+like Odoo, it is a good security practice to restrict access to your organization's network (which remote employees
+can VPN into).  That way, if there is a security flaw in Odoo, your installation will not immediately vulnerable to
+outside hackers.  Note that we do not restrict outbound connections at all.  That can help security, but it takes more
+work and can more easily lead to things not working as expected than just restricting inbound connections.
+
+If you are on AWS, you should be able to set this up pretty simply using security groups.  Otherwise, you will need
+to use iptables.  Normally blocking access to ports from random IP addresses would be done by configuring the
+`INPUT` chain of the `filter` table in iptables.  However, when a docker container is listening on ports, traffic
+to them actually goes to the `FORWARD` chain instead, so blocking on the `INPUT` chain is ineffective.  So we need
+to block access in the normal way on the `INPUT` chain (for ports other than 80 and 443 and for those ports in case
+Odoo is down), but we also need to block access on the `DOCKER-USER` chain (a special chain that docker sets up
+that traffic is sent to before being sent anywhere else.
+
+To enable ordinary blocking, as root,
+
+```
+# Accept pings
+iptables -I INPUT -p icmp --icmp-type any -j ACCEPT
+# Accept ssh (optionally, you could accept ssh only from your organization's network)
+iptables -I INPUT -p tcp --dport 22 -j ACCEPT
+# The following two lines accept stuff that should be accepted on
+# almost any system for things to work normally
+iptables -I INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -I INPUT -i lo -j ACCEPT
+# Drop everything else
+iptables -P INPUT DROP
+```
+
+(Note: docker creates some special network interfaces.  Possibly we should add rules to accept connections from
+them just like from the loopback connection.  Or else we should set the default policy to ACCEPT but explicitly
+drop traffic from the external network interface if it doesn't match one of our special ACCEPT rules.  However,
+so far I have not had any problems with the config as is.)
+
+(For some suggestions about additional stuff you might want to block on your servers, see
+`https://security.blogoverflow.com/2011/08/base-rulesets-in-iptables/`.  It seems to me that these suggestions
+are not all that likely to stop an attack, and one of them (dropping fragments) could possibly cause problems.)
+
+To enable docker blocking, assuming there is just one IP address you need to allow access from, as root,
+
+```
+iptables -I DOCKER-USER -i <ext_if> ! -s <ok_ip> -j DROP
+```
+
+Here you need to replace `<ext_if>` with the name of your network device.  (It might be something like `ens3`.
+Run `ifconfig` to find it out.)  And you need to replace `<ok_ip>` with the IP address you want to allow
+connections from.
+
+Test this configuration.  It is not persistent yet, so if something goes wrong, reboot your machine and you
+will be back to where you started.
+
+To make the rules persistent, as root,
+
+```
+apt install iptables-persistent
+```
+
+It will prompt you to save your current rules the first time.  Afterwards, if you make any changes to your
+rules and want to persist them, as root,
+
+```
+iptables-save > /etc/iptables/rules.v4
+```
+
+Iptables doesn't do anything about ipv6 connections.  For that you need to use ip6tables.  But unless you
+need ipv6 for something, you can just disable it, as explained at
+`http://www.neuraldump.net/2016/11/how-to-disable-ipv6-in-ubuntu-16-04-xenial-xerus/`, by adding these
+three lines to `/etc/sysctl.conf`:
+
+```
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+```
+
+and then running `sysctl -p`.
