@@ -7,7 +7,7 @@ SSL.  Furthermore, you need to get an SSL certificate, and you need to implement
 should make all this start automatically when your machine boots.
 
 Auto Odoo aims to make this all as simple as possible to set up while being as simple and transparent as possible
-itself.  (This README is longer than all the code making up Auto Odoo.)
+itself.  (This README is much longer than all the code making up Auto Odoo.)
 
 To orchestrate the three servers, Auto Odoo uses docker-compose.  Unlike other dockerized Odoo systems which use
 custom images that can be complicated to understand, Auto Odoo only uses the standard odoo, postgres, and nginx
