@@ -1,10 +1,11 @@
 # Auto Odoo
 
-Quickly configure a production Odoo server with SSL and backups.
+Quickly configure a production Odoo server in a secure way with backups.
 
 To run a production Odoo server, you need to run the server itself, a database, and a reverse proxy to terminate
 SSL.  Furthermore, you need to get an SSL certificate, and you need to implement a backup system.  Finally, you
-should make all this start automatically when your machine boots.
+should make all this start automatically when your machine boots.  Oh, and you should probably set up a firewall
+to restrict access to Odoo to your organization's network.
 
 Auto Odoo aims to make this all as simple as possible to set up while being as simple and transparent as possible
 itself.  (This README is much longer than all the code making up Auto Odoo.)
@@ -28,6 +29,9 @@ by restricting this ssh key to only be able to scp into a particular directory a
 that directory (with cron jobs on the backup servers).
 
 Auto Odoo is tested only on Ubuntu 16.04.
+
+Currently, no support is provided for using Odoo extensions (but please open an issue if you need this
+functionality).
 
 To install, follow the following steps:
 
@@ -317,19 +321,25 @@ works as intended.
 ## Firewalling Odoo
 
 On any server, it is a good security practice to set up a firewall to restrict outside access to all ports except
-ssh and any you are running services on.  In the case of services that are only used internally to your organization,
-like Odoo, it is a good security practice to restrict access to your organization's network (which remote employees
-can VPN into).  That way, if there is a security flaw in Odoo, your installation will not immediately vulnerable to
-outside hackers.  Note that we do not restrict outbound connections at all.  That can help security, but it takes more
-work and can more easily lead to things not working as expected than just restricting inbound connections.
+ssh and any you are running services on.  In the case of services that are only used internally to your
+organization, like Odoo, it is a good security practice to restrict access to your organization's network (which
+remote employees can VPN into).  That way, if there is a security flaw in Odoo, your installation will not
+immediately vulnerable to outside hackers.  Setting up such a firewall is slightly more complicated when using
+dockerized services than otherwise.
 
-If you are on AWS, you should be able to set this up pretty simply using security groups.  Otherwise, you will need
-to use iptables.  Normally blocking access to ports from random IP addresses would be done by configuring the
-`INPUT` chain of the `filter` table in iptables.  However, when a docker container is listening on ports, traffic
-to them actually goes to the `FORWARD` chain instead, so blocking on the `INPUT` chain is ineffective.  So we need
-to block access in the normal way on the `INPUT` chain (for ports other than 80 and 443 and for those ports in case
-Odoo is down), but we also need to block access on the `DOCKER-USER` chain (a special chain that docker sets up
-that traffic is sent to before being sent anywhere else.
+Note that our firewall will only restrict inbound connections.  Restricting outbound connections can help security,
+but it takes more work and can more easily lead to things not working as expected than just restricting inbound
+connections.
+
+If you are on AWS, you can use security groups to set up your firewall.  Otherwise, you will need to use iptables.
+The reset of this section assumes that you are using iptables.
+
+Normally blocking access to ports from random IP addresses would be done by configuring the `INPUT` chain of the
+`filter` table in iptables.  However, when a docker container is listening on ports, traffic to them actually goes
+to the `FORWARD` chain instead, so blocking on the `INPUT` chain is ineffective.  So we need to block access in the
+normal way on the `INPUT` chain (for ports other than 80 and 443 and for those ports in case Odoo is down), but we
+also need to block access on the `DOCKER-USER` chain (a special chain that docker sets up that traffic is sent to
+before being sent anywhere else.
 
 To enable ordinary blocking, as root,
 
