@@ -325,7 +325,7 @@ On any server, it is a good security practice to set up a firewall to restrict o
 ssh and any you are running services on.  In the case of services that are only used internally to your
 organization, like Odoo, it is a good security practice to restrict access to your organization's network (which
 remote employees can VPN into).  That way, if there is a security flaw in Odoo, your installation will not
-immediately vulnerable to outside hackers.  Setting up such a firewall is slightly more complicated when using
+be immediately vulnerable to outside hackers.  Setting up such a firewall is slightly more complicated when using
 dockerized services than otherwise.
 
 Note that our firewall will only restrict inbound connections.  Restricting outbound connections can help security,
@@ -333,7 +333,7 @@ but it takes more work and can more easily lead to things not working as expecte
 connections.
 
 If you are on AWS, you can use security groups to set up your firewall.  Otherwise, you will need to use iptables.
-The reset of this section assumes that you are using iptables.
+The rest of this section assumes that you are using iptables.
 
 Normally blocking access to ports from random IP addresses would be done by configuring the `INPUT` chain of the
 `filter` table in iptables.  However, when a docker container is listening on ports, traffic to them actually goes
@@ -342,7 +342,7 @@ normal way on the `INPUT` chain (for ports other than 80 and 443 and for those p
 also need to block access on the `DOCKER-USER` chain (a special chain that docker sets up that traffic is sent to
 before being sent anywhere else.
 
-To enable ordinary blocking, as root,
+To enable blocking on ports other than those docker is listening on, as root,
 
 ```
 # Accept pings
@@ -366,7 +366,7 @@ so far I have not had any problems with the config as is.)
 `https://security.blogoverflow.com/2011/08/base-rulesets-in-iptables/`.  It seems to me that these suggestions
 are not all that likely to stop an attack, and one of them (dropping fragments) could possibly cause problems.)
 
-To enable docker blocking, assuming there is just one IP address you need to allow access from, as root,
+To blocking on ports docker is listening on, assuming there is just one IP address you need to allow access from, as root,
 
 ```
 iptables -I DOCKER-USER -i <ext_if> ! -s <ok_ip> -j DROP
