@@ -321,21 +321,24 @@ works as intended.
 
 ## Firewalling Odoo
 
+[Note: the current version of this setup blocks letsencrypt from connecting to our server to renew certificates.
+We are working on a solution to this problem.]
+
 On any server, it is a good security practice to set up a firewall to restrict outside access to all ports except
 ssh and any you are running services on.  In the case of services that are only used internally to your
 organization, like Odoo, it is a good security practice to restrict access to your organization's network (which
 remote employees can VPN into).  That way, if there is a security flaw in Odoo, your installation will not
 be immediately vulnerable to outside hackers.  Setting up such a firewall is slightly more complicated when using
-dockerized services than otherwise.
+dockerized services than otherwise.  This section explains how to set up such a firewall.
 
-Note that our firewall will only restrict inbound connections.  Restricting outbound connections can help security,
+Our firewall will only restrict inbound connections.  Restricting outbound connections can help security,
 but it takes more work and can more easily lead to things not working as expected than just restricting inbound
 connections.
 
 If you are on AWS, you can use security groups to set up your firewall.  Otherwise, you will need to use iptables.
 The rest of this section assumes that you are using iptables.
 
-Normally blocking access to ports from random IP addresses would be done by configuring the `INPUT` chain of the
+Normally, blocking access to ports from random IP addresses would be done by configuring the `INPUT` chain of the
 `filter` table in iptables.  However, when a docker container is listening on ports, traffic to them actually goes
 to the `FORWARD` chain instead, so blocking on the `INPUT` chain is ineffective.  So we need to block access in the
 normal way on the `INPUT` chain (for ports other than 80 and 443 and for those ports in case Odoo is down), but we
@@ -366,7 +369,8 @@ so far I have not had any problems with the config as is.)
 `https://security.blogoverflow.com/2011/08/base-rulesets-in-iptables/`.  It seems to me that these suggestions
 are not all that likely to stop an attack, and one of them (dropping fragments) could possibly cause problems.)
 
-To blocking on ports docker is listening on, assuming there is just one IP address you need to allow access from, as root,
+To set up blocking on ports docker is listening on, assuming there is just one IP address you need to allow access
+from, as root,
 
 ```
 iptables -I DOCKER-USER -i <ext_if> ! -s <ok_ip> -j DROP
