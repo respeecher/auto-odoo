@@ -1,3 +1,5 @@
 # The certificate will be for the following domain and its "crm" subdomain.  (Or
 # maybe we should use "host" or "server" as the variable name instead of "domain".)
 domain=mydomain.com
+email=me@mydomain.com
+

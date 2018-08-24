@@ -13,5 +13,5 @@ if systemctl is-active auto-odoo; then
     trap finish EXIT
     systemctl stop auto-odoo
 fi
-certbot certonly --standalone -n -d $domain -d crm.$domain
+certbot certonly --agree-tos --standalone -n -d $domain -d crm.$domain --email $email
 

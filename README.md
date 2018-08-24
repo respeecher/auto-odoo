@@ -105,8 +105,8 @@ Run
 cp variables.template variables
 ```
 
-Then edit the `variables` file to conform to your site's needs.  (Currently there is only one variable to
-customize: the name of your server.)
+Then edit the `variables` file to conform to your site's needs.  (Currently there are only two variables to
+customize: the name of your server and your email, for letsencrypt.)
 
 Run
 
