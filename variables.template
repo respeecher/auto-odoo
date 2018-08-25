@@ -1,5 +1,13 @@
-# The certificate will be for the following domain and its "crm" subdomain.  (Or
-# maybe we should use "host" or "server" as the variable name instead of "domain".)
+# Domain of server.  Will get certificates for domain and crm.domain
 domain=mydomain.com
+# Email (for letsencrypt)
 email=me@mydomain.com
+# Certbot method to use.  Standalone is easiest but will not work behind
+# a firewall.  For AWS dns change to dns-route53.  You will also need to
+# install the certbot route53 plugin (with pip install certbot-dns-route53),
+# install the aws cli (with pip install awscli), create an IAM user with
+# privileges to mess with your domain settings, as described on
+# https://certbot-dns-route53.readthedocs.io/en/latest/, and use aws
+# configure to set up root to use the corresponding aws credentials.
+certbot_method=standalone
 

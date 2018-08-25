@@ -105,8 +105,7 @@ Run
 cp variables.template variables
 ```
 
-Then edit the `variables` file to conform to your site's needs.  (Currently there are only two variables to
-customize: the name of your server and your email, for letsencrypt.)
+Then edit the `variables` file to conform to your site's needs.
 
 Run
 
@@ -321,8 +320,11 @@ works as intended.
 
 ## Firewalling Odoo
 
-[Note: the current version of this setup blocks letsencrypt from connecting to our server to renew certificates.
-We are working on a solution to this problem.]
+[Note: firewalling Odoo is incompatible with using certbot's standalone method to get and renew certificates because
+the firewall will block letsencrypt from connecting to the server.  You will probably want to switch to dns-based
+renewal.  The variables.template file briefly describes how to do this if you use AWS Route 53 for DNS.  You use
+an AWS-specific certbot plugin.  Many other cloud DNS providers also have certbot plugins that should work
+similarly.]
 
 On any server, it is a good security practice to set up a firewall to restrict outside access to all ports except
 ssh and any you are running services on.  In the case of services that are only used internally to your
