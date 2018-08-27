@@ -376,6 +376,7 @@ from, as root,
 
 ```
 iptables -I DOCKER-USER -i <ext_if> ! -s <ok_ip> -j DROP
+iptables -I DOCKER-USER -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 ```
 
 Here you need to replace `<ext_if>` with the name of your network device.  (It might be something like `ens3`.
