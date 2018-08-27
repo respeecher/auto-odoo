@@ -53,20 +53,6 @@ https://security.stackexchange.com/questions/94390/whats-the-purpose-of-dh-param
 if you are interested in knowing more about how generating this parameter can, at least in
 theory, help security.
 
-## Install certbot
-
-Follow the instructions at `https://certbot.eff.org/#ubuntuxenial-other`:
-
-As root,
-
-```
-apt-get update
-apt-get install software-properties-common
-add-apt-repository -y ppa:certbot/certbot
-apt-get update
-apt-get install -y certbot
-```
-
 ## Install docker
 
 Follow the instructions at `https://docs.docker.com/install/linux/docker-ce/ubuntu/`:
