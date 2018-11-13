@@ -14,7 +14,7 @@ if systemctl is-active auto-odoo && [[ $certbot_method = standalone ]]; then
     trap finish EXIT
     systemctl stop auto-odoo
 fi
-docker run -it --rm --name certbot \
+docker run --rm --name certbot \
    -v "/etc/letsencrypt:/etc/letsencrypt" \
    -v "/var/lib/letsencrypt:/var/lib/letsencrypt" \
    -v "/var/log/letsencrypt:/var/log/letsencrypt" \
