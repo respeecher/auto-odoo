@@ -49,14 +49,14 @@ openssl dhparam -out dhparam.pem 4096
 ```
 
 See the section "Forward Secrecy & Diffie Hellman Ephemeral Parameters" of
-https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html and
-https://security.stackexchange.com/questions/94390/whats-the-purpose-of-dh-parameters
+<https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html> and
+<https://security.stackexchange.com/questions/94390/whats-the-purpose-of-dh-parameters>
 if you are interested in knowing more about how generating this parameter can, at least in
 theory, help security.
 
 ## Install docker
 
-Follow the instructions at `https://docs.docker.com/install/linux/docker-ce/ubuntu/`:
+Follow the instructions at <https://docs.docker.com/install/linux/docker-ce/ubuntu/>:
 
 As root,
 
@@ -75,7 +75,7 @@ privileges, however.)
 
 ## Install docker-compose
 
-Follow the instructions at `https://docs.docker.com/compose/install/#install-compose`:
+Follow the instructions at <https://docs.docker.com/compose/install/#install-compose>:
 
 As root,
 
@@ -355,7 +355,7 @@ drop traffic from the external network interface if it doesn't match one of our 
 so far I have not had any problems with the config as is.)
 
 (For some suggestions about additional stuff you might want to block on your servers, see
-`https://security.blogoverflow.com/2011/08/base-rulesets-in-iptables/`.  It seems to me that these suggestions
+<https://security.blogoverflow.com/2011/08/base-rulesets-in-iptables/>.  It seems to me that these suggestions
 are not all that likely to stop an attack, and one of them (dropping fragments) could possibly cause problems.)
 
 To set up blocking on ports docker is listening on, assuming there is just one IP address you need to allow access
@@ -388,7 +388,7 @@ iptables-save > /etc/iptables/rules.v4
 
 Iptables doesn't do anything about ipv6 connections.  For that you need to use ip6tables.  But unless you
 need ipv6 for something, you can just disable it, as explained at
-`http://www.neuraldump.net/2016/11/how-to-disable-ipv6-in-ubuntu-16-04-xenial-xerus/`, by adding these
+<http://www.neuraldump.net/2016/11/how-to-disable-ipv6-in-ubuntu-16-04-xenial-xerus/>, by adding these
 three lines to `/etc/sysctl.conf`:
 
 ```
