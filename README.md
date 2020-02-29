@@ -15,7 +15,8 @@ custom images that can be complicated to understand, Auto Odoo only uses the sta
 images.  Of the three servers, only nginx requires any configuration, and Auto Odoo uses a simple reverse proxy
 configuration optimized for security and performance (not compatibility with old browsers).
 
-For SSL certificates, Auto Odoo uses certbot from letsencrypt in standalone mode.
+For SSL certificates, Auto Odoo uses certbot from letsencrypt, either in standalone mode or (to allow use with a
+firewall) using DNS authentication.
 
 For backups, Auto Odoo uses scp to copy the postgres data directory, odoo data directory, and nginx logs to a
 machine or machines of your choice.  It also then truncates the logs so successive backups contain successive
@@ -60,12 +61,12 @@ Follow the instructions at `https://docs.docker.com/install/linux/docker-ce/ubun
 As root,
 
 ```
-apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 apt-key fingerprint 0EBFCD88
 add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 apt-get update
-apt-get install -y docker-ce
+apt-get install -y docker-ce docker-ce-cli containerd.io
 ```
 
 You can add yourself to the `docker` group to be able to run docker as non-root by running `usermod -aG docker XXX`
@@ -79,7 +80,7 @@ Follow the instructions at `https://docs.docker.com/compose/install/#install-com
 As root,
 
 ```
-curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 ```
 
